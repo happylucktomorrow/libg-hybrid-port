@@ -1,0 +1,49 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "android-armeabi-v7a",
+            "displayName": "Android ARM32",
+            "description": "Cross-compile for Android armeabi-v7a",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
+                "ANDROID_ABI": "armeabi-v7a",
+                "ANDROID_PLATFORM": "android-19",
+                "ANDROID_STL": "c++_shared"
+            }
+        },
+        {
+            "name": "android-x86",
+            "displayName": "Android x86",
+            "description": "Cross-compile for Android x86",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
+                "ANDROID_ABI": "x86",
+                "ANDROID_PLATFORM": "android-19",
+                "ANDROID_STL": "c++_shared"
+            }
+        },
+        {
+            "name": "host",
+            "displayName": "Host build",
+            "description": "Build for host (tests)",
+            "generator": "Ninja"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "android-armeabi-v7a",
+            "configurePreset": "android-armeabi-v7a"
+        },
+        {
+            "name": "android-x86",
+            "configurePreset": "android-x86"
+        },
+        {
+            "name": "host",
+            "configurePreset": "host"
+        }
+    ]
+}

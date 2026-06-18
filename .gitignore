@@ -1,0 +1,29 @@
+# Build outputs
+build/
+build-*/
+out/
+*.o
+*.os
+*.so
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated files
+src/internal/arm_exports.S
+src/internal/trampolines.S
+symbols/*.txt
+
+# Original binary
+original/libg.so
