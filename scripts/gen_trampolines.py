@@ -46,8 +46,8 @@ def get_function_info(libg: Path):
             idx = int(parts[0].rstrip(':'))
         except ValueError:
             continue
-        typ = parts[2]
-        bind = parts[4]
+        typ = parts[3]   # Column 4: NOTYPE, FUNC, OBJECT, etc.
+        bind = parts[4]  # Column 5: LOCAL, GLOBAL
         ndx = parts[6]
         name = parts[7] if len(parts) > 7 else ""
 

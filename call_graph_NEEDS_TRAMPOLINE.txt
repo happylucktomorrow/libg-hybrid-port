@@ -1,0 +1,7 @@
+# Functions called by internal ARM — need branch trampoline
+# addr size name
+# callers: list
+
+0x002a4b85      128 _ZN11LogicAvatar27setCommodityBoatLevelHelperEii
+  called_by (1): _ZN19SwapLandingBoatTool18setSwappedBuildingEP10GameObject
+

@@ -50,9 +50,10 @@ def get_function_info(libg: Path):
             idx = int(parts[0].rstrip(':'))
         except ValueError:
             continue
-        typ = parts[2]
-        bind = parts[4]
-        ndx = parts[6]
+
+        typ = parts[3]   # Column 4: NOTYPE, FUNC, OBJECT, etc.
+        bind = parts[4]   # Column 5: LOCAL, GLOBAL
+        ndx = parts[6]    # Column 7: section index or UND
         name = parts[7] if len(parts) > 7 else ""
 
         if typ == "FUNC" and bind == "GLOBAL" and ndx != "UND" and name:

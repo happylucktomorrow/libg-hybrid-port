@@ -2,13 +2,26 @@
 build/
 build-*/
 out/
+build.ninja
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+Makefile
+cmake_install.cmake
 *.o
 *.os
 *.so
 
+# Generated files (in build dir)
+*.S
+symbols/*.txt
+!symbols/README.md
+
 # Python
 __pycache__/
 *.pyc
+.ninja_deps
+.ninja_log
 
 # IDE
 .idea/
@@ -19,11 +32,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
-
-# Generated files
-src/internal/arm_exports.S
-src/internal/trampolines.S
-symbols/*.txt
 
 # Original binary
 original/libg.so
