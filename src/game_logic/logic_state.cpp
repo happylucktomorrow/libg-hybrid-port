@@ -31,8 +31,83 @@ GameState g_state;
 std::unordered_map<int32_t, void*> g_objects_by_id;
 std::unordered_map<void*, int32_t> g_id_by_object;
 int32_t g_next_object_id = 1;
+std::vector<void*> g_pending_commands;
+ResourceWallet g_wallet{10000, 10000, 10000, 10000, 100};
+int32_t g_avatar_level = 1;
+int32_t g_avatar_score = 0;
 
 } // anonymous namespace
+
+extern "C" LIBG_EXPORT
+void* libg_get_game_object_by_id(int32_t id) {
+    const auto it = g_objects_by_id.find(id);
+    return it == g_objects_by_id.end() ? nullptr : it->second;
+}
+
+extern "C" LIBG_EXPORT
+void libg_add_game_object(void* obj) {
+    if (!obj) {
+        return;
+    }
+    const int32_t id = g_next_object_id++;
+    g_objects_by_id[id] = obj;
+    g_id_by_object[obj] = id;
+    auto* header = static_cast<OpaqueGameObjectHeader*>(obj);
+    header->object_id = id;
+}
+
+extern "C" LIBG_EXPORT
+void libg_remove_game_object(void* obj) {
+    if (!obj) {
+        return;
+    }
+    const auto it = g_id_by_object.find(obj);
+    if (it == g_id_by_object.end()) {
+        return;
+    }
+    g_objects_by_id.erase(it->second);
+    g_id_by_object.erase(it);
+}
+
+extern "C" LIBG_EXPORT
+void libg_register_command(void* cmd) {
+    if (cmd) {
+        g_pending_commands.push_back(cmd);
+    }
+}
+
+extern "C" LIBG_EXPORT
+int32_t libg_get_wallet_amount(int32_t resource_type) {
+    switch (static_cast<ResourceType>(resource_type)) {
+    case ResourceType::Gold: return g_wallet.gold;
+    case ResourceType::Wood: return g_wallet.wood;
+    case ResourceType::Stone: return g_wallet.stone;
+    case ResourceType::Iron: return g_wallet.iron;
+    case ResourceType::Diamonds: return g_wallet.diamonds;
+    default: return 0;
+    }
+}
+
+extern "C" LIBG_EXPORT
+bool libg_spend_wallet_amount(int32_t resource_type, int32_t amount) {
+    if (amount < 0) {
+        return false;
+    }
+    const auto type = static_cast<ResourceType>(resource_type);
+    if (!g_wallet.can_afford(type, amount)) {
+        return false;
+    }
+    g_wallet.spend(type, amount);
+    return true;
+}
+
+extern "C" LIBG_EXPORT
+void libg_add_wallet_amount(int32_t resource_type, int32_t amount) {
+    if (amount <= 0) {
+        return;
+    }
+    g_wallet.add(static_cast<ResourceType>(resource_type), amount);
+}
 
 // ============================================================================
 // LogicGameObjectManager
@@ -125,20 +200,21 @@ void _ZN19LogicCommandManager8destructEv(void* self) {
 
 extern "C" LIBG_EXPORT
 void _ZN19LogicCommandManagerC1EP10LogicLevel(void* self, void* level) {
-    (void)level;
     _ZN18LogicCommandManagerC1Ev(self);
+    if (self) {
+        std::memcpy(static_cast<uint8_t*>(self) + 0x14, &level, sizeof(level));
+    }
 }
 
 extern "C" LIBG_EXPORT
 void _ZN19LogicCommandManagerC2EP10LogicLevel(void* self, void* level) {
-    (void)level;
-    _ZN18LogicCommandManagerC1Ev(self);
+    _ZN19LogicCommandManagerC1EP10LogicLevel(self, level);
 }
 
 extern "C" LIBG_EXPORT
 void _ZN19LogicCommandManager10addCommandEP12LogicCommand(void* self, void* cmd) {
     (void)self;
-    (void)cmd;
+    libg_register_command(cmd);
 }
 
 extern "C" LIBG_EXPORT
@@ -147,11 +223,78 @@ void _ZN19LogicCommandManager11setListenerEP27LogicCommandManagerListener(void* 
     (void)listener;
 }
 
+extern "C" LIBG_EXPORT void _ZN23LogicBuyBuildingCommandC1EP17LogicBuildingDataiib(void*, void*, int32_t, int32_t, bool);
+extern "C" LIBG_EXPORT void _ZN24LogicMoveBuildingCommandC1Eiii(void*, int32_t, int32_t, int32_t);
+extern "C" LIBG_EXPORT void _ZN27LogicUpgradeBuildingCommandC1Eib(void*, int32_t, bool);
+extern "C" LIBG_EXPORT void _ZN24LogicSellBuildingCommandC1Ei(void*, int32_t);
+extern "C" LIBG_EXPORT void _ZN25LogicClearObstacleCommandC1Ei(void*, int32_t);
+extern "C" LIBG_EXPORT void _ZN21LogicTrainUnitCommandC1EiP19LogicCombatItemData(void*, int32_t, void*);
+extern "C" LIBG_EXPORT void _ZN31LogicSpeedUpConstructionCommandC1Ei(void*, int32_t);
+extern "C" LIBG_EXPORT void _ZN24LogicBuyResourcesCommandC1EP27LogicResourceCostingCommand(void*, void*);
+
 extern "C" LIBG_EXPORT
 void* _ZN19LogicCommandManager13createCommandEi(void* self, int32_t type) {
     (void)self;
-    (void)type;
-    return nullptr;
+    switch (type) {
+    case 500: {
+        void* cmd = std::calloc(1, 0x20);
+        if (cmd) {
+            _ZN23LogicBuyBuildingCommandC1EP17LogicBuildingDataiib(cmd, nullptr, 0, 0, false);
+        }
+        return cmd;
+    }
+    case 0x1f5: {
+        void* cmd = std::calloc(1, 0x20);
+        if (cmd) {
+            _ZN24LogicMoveBuildingCommandC1Eiii(cmd, 0, 0, 0);
+        }
+        return cmd;
+    }
+    case 0x1f6: {
+        void* cmd = std::calloc(1, 0x20);
+        if (cmd) {
+            _ZN27LogicUpgradeBuildingCommandC1Eib(cmd, 0, false);
+        }
+        return cmd;
+    }
+    case 0x1f7: {
+        void* cmd = std::calloc(1, 0x18);
+        if (cmd) {
+            _ZN24LogicSellBuildingCommandC1Ei(cmd, 0);
+        }
+        return cmd;
+    }
+    case 0x1f8: {
+        void* cmd = std::calloc(1, 0x10);
+        if (cmd) {
+            _ZN31LogicSpeedUpConstructionCommandC1Ei(cmd, 0);
+        }
+        return cmd;
+    }
+    case 0x1fb: {
+        void* cmd = std::calloc(1, 0x30);
+        if (cmd) {
+            _ZN25LogicClearObstacleCommandC1Ei(cmd, 0);
+        }
+        return cmd;
+    }
+    case 0x1fc: {
+        void* cmd = std::calloc(1, 0x20);
+        if (cmd) {
+            _ZN21LogicTrainUnitCommandC1EiP19LogicCombatItemData(cmd, 0, nullptr);
+        }
+        return cmd;
+    }
+    case 0x24f: {
+        void* cmd = std::calloc(1, 0x18);
+        if (cmd) {
+            _ZN24LogicBuyResourcesCommandC1EP27LogicResourceCostingCommand(cmd, nullptr);
+        }
+        return cmd;
+    }
+    default:
+        return nullptr;
+    }
 }
 
 extern "C" LIBG_EXPORT
@@ -204,8 +347,28 @@ void _ZN19LogicCommandManager7subTickEv(void* self) {
 
 extern "C" LIBG_EXPORT
 void _ZNK19LogicCommandManager30isCommandAllowedInCurrentStateEP12LogicCommand(void* self, void* cmd) {
-    (void)self;
-    (void)cmd;
+    if (!self || !cmd) {
+        return;
+    }
+
+    const int32_t type = *reinterpret_cast<int32_t*>(cmd);
+    const void* level = *reinterpret_cast<void* const*>(static_cast<uint8_t*>(self) + 0x14);
+    if (!level) {
+        return;
+    }
+    switch (type) {
+    case 500:
+    case 0x1f5:
+    case 0x1f6:
+    case 0x1f7:
+    case 0x1f8:
+    case 0x1fb:
+    case 0x1fc:
+    case 0x24f:
+        break;
+    default:
+        break;
+    }
 }
 
 extern "C" LIBG_EXPORT
@@ -261,20 +424,20 @@ void _ZN17LogicClientAvatarD1Ev(void* self) {
 
 extern "C" LIBG_EXPORT
 int32_t _ZN17LogicClientAvatar8getScoreEv(void* self) {
-    // Return player's VP/score
-    return 0;
+    (void)self;
+    return g_avatar_score;
 }
 
 extern "C" LIBG_EXPORT
 int32_t _ZN17LogicClientAvatar10getDiamondsEv(void* self) {
-    // Return player's diamond count
-    return 0;
+    (void)self;
+    return g_wallet.diamonds;
 }
 
 extern "C" LIBG_EXPORT
 int32_t _ZN17LogicClientAvatar9getLevelsEv(void* self) {
-    // Return player's XP level
-    return 1;
+    (void)self;
+    return g_avatar_level;
 }
 
 // ============================================================================
