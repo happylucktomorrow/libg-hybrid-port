@@ -75,6 +75,12 @@ extern "C" LIBG_EXPORT
 void _ZN23LogicBuyBuildingCommand8destructEv(void* self) {}
 
 extern "C" LIBG_EXPORT
+void _ZN23LogicBuyBuildingCommandC1EP17LogicBuildingDataiib(void* self, void* data, int32_t a, int32_t b, bool c) {}
+
+extern "C" LIBG_EXPORT
+void _ZN23LogicBuyBuildingCommandC2EP17LogicBuildingDataiib(void* self, void* data, int32_t a, int32_t b, bool c) {}
+
+extern "C" LIBG_EXPORT
 void _ZN23LogicBuyBuildingCommand7executeEP10LogicLevel(void* self, void* level) {}
 
 extern "C" LIBG_EXPORT
@@ -99,6 +105,12 @@ extern "C" LIBG_EXPORT
 void _ZN21LogicTrainUnitCommand8destructEv(void* self) {}
 
 extern "C" LIBG_EXPORT
+void _ZN21LogicTrainUnitCommandC1EiP19LogicCombatItemData(void* self, int32_t a, void* data) {}
+
+extern "C" LIBG_EXPORT
+void _ZN21LogicTrainUnitCommandC2EiP19LogicCombatItemData(void* self, int32_t a, void* data) {}
+
+extern "C" LIBG_EXPORT
 void _ZN21LogicTrainUnitCommand7executeEP10LogicLevel(void* self, void* level) {}
 
 extern "C" LIBG_EXPORT
@@ -120,6 +132,12 @@ extern "C" LIBG_EXPORT
 void _ZN24LogicMoveBuildingCommand8destructEv(void* self) {}
 
 extern "C" LIBG_EXPORT
+void _ZN24LogicMoveBuildingCommandC1Eiii(void* self, int32_t a, int32_t b, int32_t c) {}
+
+extern "C" LIBG_EXPORT
+void _ZN24LogicMoveBuildingCommandC2Eiii(void* self, int32_t a, int32_t b, int32_t c) {}
+
+extern "C" LIBG_EXPORT
 void _ZN24LogicMoveBuildingCommand7executeEP10LogicLevel(void* self, void* level) {}
 
 extern "C" LIBG_EXPORT
@@ -135,6 +153,12 @@ extern "C" LIBG_EXPORT
 void _ZN24LogicSellBuildingCommand8destructEv(void* self) {}
 
 extern "C" LIBG_EXPORT
+void _ZN24LogicSellBuildingCommandC1Ei(void* self, int32_t a) {}
+
+extern "C" LIBG_EXPORT
+void _ZN24LogicSellBuildingCommandC2Ei(void* self, int32_t a) {}
+
+extern "C" LIBG_EXPORT
 void _ZN24LogicSellBuildingCommand7executeEP10LogicLevel(void* self, void* level) {}
 
 extern "C" LIBG_EXPORT
@@ -148,6 +172,12 @@ void _ZN24LogicSellBuildingCommand6decodeEP10ByteStream(void* self, void* stream
 
 extern "C" LIBG_EXPORT
 void _ZN25LogicClearObstacleCommand8destructEv(void* self) {}
+
+extern "C" LIBG_EXPORT
+void _ZN25LogicClearObstacleCommandC1Ei(void* self, int32_t a) {}
+
+extern "C" LIBG_EXPORT
+void _ZN25LogicClearObstacleCommandC2Ei(void* self, int32_t a) {}
 
 extern "C" LIBG_EXPORT
 void _ZN25LogicClearObstacleCommand7executeEP10LogicLevel(void* self, void* level) {}
@@ -180,6 +210,12 @@ extern "C" LIBG_EXPORT
 void _ZN27LogicUpgradeBuildingCommand8destructEv(void* self) {}
 
 extern "C" LIBG_EXPORT
+void _ZN27LogicUpgradeBuildingCommandC1Eib(void* self, int32_t a, bool b) {}
+
+extern "C" LIBG_EXPORT
+void _ZN27LogicUpgradeBuildingCommandC2Eib(void* self, int32_t a, bool b) {}
+
+extern "C" LIBG_EXPORT
 void _ZN27LogicUpgradeBuildingCommand7executeEP10LogicLevel(void* self, void* level) {}
 
 extern "C" LIBG_EXPORT
@@ -199,6 +235,12 @@ void* _ZNK27LogicUpgradeBuildingCommand13getTargetDataEP10LogicLevel(void* self,
 
 extern "C" LIBG_EXPORT
 void _ZN31LogicSpeedUpConstructionCommand8destructEv(void* self) {}
+
+extern "C" LIBG_EXPORT
+void _ZN31LogicSpeedUpConstructionCommandC1Ei(void* self, int32_t a) {}
+
+extern "C" LIBG_EXPORT
+void _ZN31LogicSpeedUpConstructionCommandC2Ei(void* self, int32_t a) {}
 
 extern "C" LIBG_EXPORT
 void* _ZN31LogicSpeedUpConstructionCommand7executeEP10LogicLevel(void* self, void* level) { return nullptr; }
@@ -223,6 +265,12 @@ void* _ZN24LogicBuyResourcesCommand19getMaxResourceCountEP10LogicLevel(void* sel
 
 extern "C" LIBG_EXPORT
 void _ZN24LogicBuyResourcesCommand8destructEv(void* self) {}
+
+extern "C" LIBG_EXPORT
+void _ZN24LogicBuyResourcesCommandC1EP27LogicResourceCostingCommand(void* self, void* base) {}
+
+extern "C" LIBG_EXPORT
+void _ZN24LogicBuyResourcesCommandC2EP27LogicResourceCostingCommand(void* self, void* base) {}
 
 extern "C" LIBG_EXPORT
 void* _ZN24LogicBuyResourcesCommand7executeEP10LogicLevel(void* self, void* level) { return nullptr; }
