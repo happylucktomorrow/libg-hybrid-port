@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 #include <unordered_map>
 #include <vector>
 
@@ -22,11 +23,29 @@ struct GameState {
     bool initialized = false;
 };
 
+struct OpaqueGameObjectHeader {
+    int32_t object_id;
+};
+
 GameState g_state;
 std::unordered_map<int32_t, void*> g_objects_by_id;
 std::unordered_map<void*, int32_t> g_id_by_object;
 std::vector<void*> g_command_history;
 int32_t g_next_object_id = 1;
+
+struct OpaqueLogicCommand {
+    int32_t type = 0;
+    bool executed = false;
+};
+
+OpaqueLogicCommand* make_command(int32_t type) {
+    auto* cmd = static_cast<OpaqueLogicCommand*>(std::calloc(1, sizeof(OpaqueLogicCommand)));
+    if (!cmd) {
+        return nullptr;
+    }
+    cmd->type = type;
+    return cmd;
+}
 
 } // anonymous namespace
 
@@ -41,6 +60,7 @@ void _ZN22LogicGameObjectManagerC1Ev(void* self) {
     if (!g_state.obj_mgr) {
         g_state.obj_mgr = static_cast<LogicGameObjectManager*>(self);
     }
+    g_state.initialized = true;
 }
 
 extern "C" LIBG_EXPORT
@@ -54,9 +74,17 @@ void _ZN22LogicGameObjectManager14addGameObjectEPN5Logic12GameObjectE(void* self
         return;
     }
 
+    const auto existing = g_id_by_object.find(obj);
+    if (existing != g_id_by_object.end()) {
+        return;
+    }
+
     const int32_t id = g_next_object_id++;
     g_objects_by_id[id] = obj;
     g_id_by_object[obj] = id;
+
+    auto* header = static_cast<OpaqueGameObjectHeader*>(obj);
+    header->object_id = id;
 }
 
 extern "C" LIBG_EXPORT
@@ -83,8 +111,7 @@ void* _ZN22LogicGameObjectManager13getGameObjectEi(void* self, int32_t id) {
 extern "C" LIBG_EXPORT
 int32_t _ZN22LogicGameObjectManager11getObjectIdEv(void* self) {
     // Generate next unique object ID
-    static int32_t next_id = 1;
-    return next_id++;
+    return g_next_object_id++;
 }
 
 // ============================================================================
@@ -104,6 +131,122 @@ void _ZN18LogicCommandManagerD1Ev(void* self) {
 }
 
 extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManagerD1Ev(void* self) {
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager8destructEv(void* self) {
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManagerC1EP10LogicLevel(void* self, void* level) {
+    (void)level;
+    _ZN18LogicCommandManagerC1Ev(self);
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManagerC2EP10LogicLevel(void* self, void* level) {
+    (void)level;
+    _ZN18LogicCommandManagerC1Ev(self);
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager10addCommandEP12LogicCommand(void* self, void* cmd) {
+    if (!cmd) {
+        return;
+    }
+    g_command_history.push_back(cmd);
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager11setListenerEP27LogicCommandManagerListener(void* self, void* listener) {
+    (void)self;
+    (void)listener;
+}
+
+extern "C" LIBG_EXPORT
+void* _ZN19LogicCommandManager13createCommandEi(void* self, int32_t type) {
+    (void)self;
+    return make_command(type);
+}
+
+extern "C" LIBG_EXPORT
+void* _ZN19LogicCommandManager13decodeCommandEP10ByteStreambb(void* self, void* stream, bool a, bool b) {
+    (void)self;
+    (void)stream;
+    (void)a;
+    (void)b;
+    return nullptr;
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager13encodeCommandEP15ChecksumEncoderP12LogicCommand(void* self, void* encoder, void* cmd) {
+    (void)self;
+    (void)encoder;
+    (void)cmd;
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager17saveCommandToJSONEP15LogicJSONObjectP12LogicCommand(void* self, void* json, void* cmd) {
+    (void)self;
+    (void)json;
+    (void)cmd;
+}
+
+extern "C" LIBG_EXPORT
+void* _ZN19LogicCommandManager19loadCommandFromJSONEP15LogicJSONObject(void* self, void* json) {
+    (void)self;
+    (void)json;
+    return nullptr;
+}
+
+extern "C" LIBG_EXPORT
+void* _ZN19LogicCommandManager6decodeEP10ByteStream(void* self, void* stream) {
+    (void)self;
+    (void)stream;
+    return nullptr;
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager6encodeEP15ChecksumEncoder(void* self, void* encoder) {
+    (void)self;
+    (void)encoder;
+}
+
+extern "C" LIBG_EXPORT
+void _ZN19LogicCommandManager7subTickEv(void* self) {
+    (void)self;
+}
+
+extern "C" LIBG_EXPORT
+bool _ZNK19LogicCommandManager30isCommandAllowedInCurrentStateEP12LogicCommand(void* self, void* cmd) {
+    return g_state.initialized && cmd != nullptr;
+}
+
+extern "C" LIBG_EXPORT
+void _ZN27LogicCommandManagerListenerC1Ev(void* self) {
+    if (self) {
+        std::memset(self, 0, 16);
+    }
+}
+
+extern "C" LIBG_EXPORT
+void _ZN27LogicCommandManagerListenerC2Ev(void* self) {
+    _ZN27LogicCommandManagerListenerC1Ev(self);
+}
+
+extern "C" LIBG_EXPORT
+void _ZN27LogicCommandManagerListener8destructEv(void* self) {
+    (void)self;
+}
+
+extern "C" LIBG_EXPORT
+void _ZN27LogicCommandManagerListener15commandExecutedEP12LogicCommand(void* self, void* cmd) {
+    (void)self;
+    (void)cmd;
+}
+
+extern "C" LIBG_EXPORT
 bool _ZN18LogicCommandManager11executeCommandEPN5Logic7CommandE(void* self, void* cmd) {
     if (!cmd) {
         return false;
@@ -118,6 +261,11 @@ void _ZN18LogicCommandManager8undoLastEv(void* self) {
     if (!g_command_history.empty()) {
         g_command_history.pop_back();
     }
+}
+
+extern "C" LIBG_EXPORT
+int32_t _ZN18LogicCommandManager14getHistoryCountEv(void* self) {
+    return static_cast<int32_t>(g_command_history.size());
 }
 
 // ============================================================================
