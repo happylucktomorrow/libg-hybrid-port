@@ -15,20 +15,71 @@
 
 namespace {
 
+struct GameMainState {
+    int width = 0;
+    int height = 0;
+    bool initialized = false;
+    bool paused = false;
+};
+
+GameMainState g_game_main_state;
+
 // Forward declarations for game logic functions we call from JNI
-void game_main_init(int width, int height);
-void game_main_deinit();
-bool game_main_back_button_pressed();
-void game_main_clear_touches();
-void game_main_surface_created();
-void game_main_surface_changed(int width, int height);
-void game_main_draw_frame();
-void game_main_touch_event(int action, float x, float y, int pointer_id);
-void game_main_key_event(int key_code, int action);
-void game_main_text_input(const char* text);
-void game_main_on_pause();
-void game_main_on_resume();
-void game_main_on_low_memory();
+void game_main_init(int width, int height) {
+    g_game_main_state.width = width;
+    g_game_main_state.height = height;
+    g_game_main_state.initialized = true;
+    g_game_main_state.paused = false;
+}
+
+void game_main_deinit() {
+    g_game_main_state = {};
+}
+
+bool game_main_back_button_pressed() {
+    return false;
+}
+
+void game_main_clear_touches() {
+}
+
+void game_main_surface_created() {
+}
+
+void game_main_surface_changed(int width, int height) {
+    g_game_main_state.width = width;
+    g_game_main_state.height = height;
+}
+
+void game_main_draw_frame() {
+}
+
+void game_main_touch_event(int action, float x, float y, int pointer_id) {
+    (void)action;
+    (void)x;
+    (void)y;
+    (void)pointer_id;
+}
+
+void game_main_key_event(int key_code, int action) {
+    (void)key_code;
+    (void)action;
+}
+
+void game_main_text_input(const char* text) {
+    (void)text;
+}
+
+void game_main_on_pause() {
+    g_game_main_state.paused = true;
+}
+
+void game_main_on_resume() {
+    g_game_main_state.paused = false;
+}
+
+void game_main_on_low_memory() {
+}
 
 std::string jstring_to_string(JNIEnv* env, jstring value) {
     if (!value) return {};

@@ -64,10 +64,6 @@ if(BUILD_ANDROID AND CMAKE_ANDROID_NDK)
 
     # Internal ARM blob (generated stubs)
     add_library(arm_blob OBJECT ${INTERNAL_STUBS} ${TRAMPOLINES})
-    set_source_files_properties(
-        ${INTERNAL_STUBS} ${TRAMPOLINES}
-        PROPERTIES COMPILE_OPTIONS "-x assembler-with-cpp"
-    )
 
     # Game logic C++
     add_library(game_logic OBJECT
