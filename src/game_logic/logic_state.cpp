@@ -30,22 +30,7 @@ struct OpaqueGameObjectHeader {
 GameState g_state;
 std::unordered_map<int32_t, void*> g_objects_by_id;
 std::unordered_map<void*, int32_t> g_id_by_object;
-std::vector<void*> g_command_history;
 int32_t g_next_object_id = 1;
-
-struct OpaqueLogicCommand {
-    int32_t type = 0;
-    bool executed = false;
-};
-
-OpaqueLogicCommand* make_command(int32_t type) {
-    auto* cmd = static_cast<OpaqueLogicCommand*>(std::calloc(1, sizeof(OpaqueLogicCommand)));
-    if (!cmd) {
-        return nullptr;
-    }
-    cmd->type = type;
-    return cmd;
-}
 
 } // anonymous namespace
 
@@ -152,10 +137,8 @@ void _ZN19LogicCommandManagerC2EP10LogicLevel(void* self, void* level) {
 
 extern "C" LIBG_EXPORT
 void _ZN19LogicCommandManager10addCommandEP12LogicCommand(void* self, void* cmd) {
-    if (!cmd) {
-        return;
-    }
-    g_command_history.push_back(cmd);
+    (void)self;
+    (void)cmd;
 }
 
 extern "C" LIBG_EXPORT
@@ -167,7 +150,8 @@ void _ZN19LogicCommandManager11setListenerEP27LogicCommandManagerListener(void* 
 extern "C" LIBG_EXPORT
 void* _ZN19LogicCommandManager13createCommandEi(void* self, int32_t type) {
     (void)self;
-    return make_command(type);
+    (void)type;
+    return nullptr;
 }
 
 extern "C" LIBG_EXPORT
@@ -219,8 +203,9 @@ void _ZN19LogicCommandManager7subTickEv(void* self) {
 }
 
 extern "C" LIBG_EXPORT
-bool _ZNK19LogicCommandManager30isCommandAllowedInCurrentStateEP12LogicCommand(void* self, void* cmd) {
-    return g_state.initialized && cmd != nullptr;
+void _ZNK19LogicCommandManager30isCommandAllowedInCurrentStateEP12LogicCommand(void* self, void* cmd) {
+    (void)self;
+    (void)cmd;
 }
 
 extern "C" LIBG_EXPORT
@@ -248,24 +233,14 @@ void _ZN27LogicCommandManagerListener15commandExecutedEP12LogicCommand(void* sel
 
 extern "C" LIBG_EXPORT
 bool _ZN18LogicCommandManager11executeCommandEPN5Logic7CommandE(void* self, void* cmd) {
-    if (!cmd) {
-        return false;
-    }
-
-    g_command_history.push_back(cmd);
+    (void)self;
+    (void)cmd;
     return true;
 }
 
 extern "C" LIBG_EXPORT
 void _ZN18LogicCommandManager8undoLastEv(void* self) {
-    if (!g_command_history.empty()) {
-        g_command_history.pop_back();
-    }
-}
-
-extern "C" LIBG_EXPORT
-int32_t _ZN18LogicCommandManager14getHistoryCountEv(void* self) {
-    return static_cast<int32_t>(g_command_history.size());
+    (void)self;
 }
 
 // ============================================================================
