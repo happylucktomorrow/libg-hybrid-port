@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cstdlib>
 #include <vector>
 
 // ============================================================================
@@ -48,6 +49,13 @@ struct ByteStream {
         return ((int64_t)read_int32() << 32) | (int64_t)(uint32_t)read_int32();
     }
 };
+
+struct OpaqueMessage {
+    int32_t message_id = 0;
+    int32_t payload_size = 0;
+};
+
+std::vector<void*> g_command_stream;
 
 } // anonymous namespace
 
@@ -96,8 +104,12 @@ void _ZN7MessageD1Ev(void* self) {
 
 extern "C" LIBG_EXPORT
 int32_t _ZN7Message8getSizeEv(void* self) {
-    // Return serialized message size
-    return 0;
+    if (!self) {
+        return 0;
+    }
+
+    auto* msg = static_cast<OpaqueMessage*>(self);
+    return msg->payload_size;
 }
 
 // ============================================================================
@@ -115,12 +127,16 @@ void _ZN13CommandStreamD1Ev(void* self) {
 
 extern "C" LIBG_EXPORT
 void _ZN13CommandStream15addCommandToEndEPN5Logic7CommandE(void* self, void* cmd) {
-    // TODO: Serialize and queue command
+    if (!cmd) {
+        return;
+    }
+
+    g_command_stream.push_back(cmd);
 }
 
 extern "C" LIBG_EXPORT
 void _ZN13CommandStream11clearStreamEv(void* self) {
-    // TODO: Clear command queue
+    g_command_stream.clear();
 }
 
 // ============================================================================
@@ -134,6 +150,16 @@ void _ZN7FactoryC1Ev(void* self) {
 
 extern "C" LIBG_EXPORT
 void* _ZN7Factory17createMessageFromEPKhi(void* self, const uint8_t* data, int32_t len) {
-    // TODO: Create message object from serialized data
-    return nullptr;
+    if (!data || len < 4) {
+        return nullptr;
+    }
+
+    const int32_t msg_id = _ZN10LoginCodec14decodeMessageIdEPKhi(nullptr, data, len);
+    auto* msg = static_cast<OpaqueMessage*>(std::calloc(1, sizeof(OpaqueMessage)));
+    if (!msg) {
+        return nullptr;
+    }
+    msg->message_id = msg_id;
+    msg->payload_size = len;
+    return msg;
 }

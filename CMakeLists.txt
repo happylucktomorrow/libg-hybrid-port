@@ -70,6 +70,7 @@ if(BUILD_ANDROID AND CMAKE_ANDROID_NDK)
         src/game_logic/logic_commands.cpp
         src/game_logic/logic_state.cpp
         src/game_logic/logic_protocol.cpp
+        src/game_logic/logic_types.cpp
     )
     target_include_directories(game_logic PUBLIC include)
 
@@ -107,6 +108,7 @@ if(BUILD_HOST_TOOLS)
         tests/logic_test_host.cpp
         src/game_logic/logic_commands.cpp
         src/game_logic/logic_state.cpp
+        src/game_logic/logic_types.cpp
     )
     target_include_directories(logic_test PRIVATE include)
     target_link_libraries(logic_test PRIVATE ZLIB::ZLIB)
